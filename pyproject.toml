@@ -4,4 +4,6 @@ version = "0.1.0"
 description = "Sync currently playing Spotify track to Telegram"
 authors = [{name = "therepanic"}]
 readme = "README.md"
+license = "Unlicense"
+license-files = ["LICENSE.txt"]
 requires-python = ">=3.10"
