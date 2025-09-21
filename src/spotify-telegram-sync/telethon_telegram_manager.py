@@ -1,4 +1,4 @@
-from telethon.sync import TelegramClient
+from telethon.sync import TelegramClient, functions
 from telegram_manager import TelegramManager
 
 class TelethonTelegramManager(TelegramManager):
@@ -6,4 +6,13 @@ class TelethonTelegramManager(TelegramManager):
         self.client = TelegramClient(session, api_id, api_hash)
     
     def start(self):
-        self.client.start()
+        return self.client.start()
+
+    def upload_file(self, file_path):
+        return self.client.upload_file(file_path)
+
+    def save_music(self, id, unsave, after_id):
+        return self.client(functions.account.SaveMusicRequest(id, unsave, after_id))
+
+    def send_file(self, peer, file):
+        return self.client.send_file(peer, file)

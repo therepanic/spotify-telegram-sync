@@ -34,7 +34,7 @@ class SpotifyCallbackHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(f"Authorization code received! You can close this page.".encode('utf-8'))
+            self.wfile.write(f"Authorization code received! You can close this page.".encode("utf-8"))
 
 class SpotifyCallbackServer:
     def __init__(self, host="0.0.0.0", port=7000):
