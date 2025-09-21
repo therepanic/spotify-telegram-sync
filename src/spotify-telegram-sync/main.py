@@ -1,11 +1,17 @@
+import asyncio
+import os
 import threading
 import time
 from spotify_callback_server import SpotifyCallbackServer
 from spotify_auth import SpotifyAuth
+from telethon_telegram_manager import TelethonTelegramManager
 
 spotify_auth = SpotifyAuth()
 spotify_manager = None
 callback_server = SpotifyCallbackServer()
+
+telegram_manager = TelethonTelegramManager("/app/session", os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
+telegram_manager.start()
 
 threading.Thread(target=callback_server.start, daemon=True).start()
 
