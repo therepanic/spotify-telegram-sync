@@ -16,3 +16,7 @@ class TelethonTelegramManager(TelegramManager):
 
     def send_file(self, peer, file):
         return self.client.send_file(peer, file)
+    
+    def delete_message(self, peer, msg):
+        return self.client.delete_messages(peer, msg)
+

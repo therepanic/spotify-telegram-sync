@@ -18,3 +18,6 @@ class TelegramManager(ABC):
     def send_file(self, peer, file):
         pass
 
+    @abstractmethod
+    def delete_message(self, peer, msg):
+        pass

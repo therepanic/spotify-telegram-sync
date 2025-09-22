@@ -6,7 +6,7 @@ class Track:
         self.album = album
 
     def __eq__(self, other):
-        return isinstance(other, Track) and self.name == other.name and self.artist == other.artist and self.cover_url == other.cover_url and self.album == other.album
+        return isinstance(other, Track) and self.name == other.name and self.artists == other.artists and self.cover_url == other.cover_url and self.album == other.album
 
     def __hash__(self):
-        return hash((self.name, self.artist, self.cover_url, self.album))
+        return hash((self.name, self.artists, self.cover_url, self.album))
