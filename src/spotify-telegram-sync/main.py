@@ -23,6 +23,8 @@ telegram_manager.start()
 active_track = None
 cached_tracks = LRUCache(os.getenv("TRACKS_CACHE_SIZE") or 20)
 
+clean_tracks = os.getenv("CLEAN_TRACKS") or True
+
 threading.Thread(target=callback_server.start, daemon=True).start()
 
 def get_track(track_info):
@@ -63,7 +65,6 @@ while (True):
             track_info = spotify_manager.current_user_playing_track()
             if (track_info and track_info.get("item")):
                 track = get_track(track_info)
-
                 if (active_track != track):
                     if (track in cached_tracks):
                         uploaded_file, msg = cached_tracks[track]
@@ -90,11 +91,12 @@ while (True):
                         cached_tracks.put(track, (uploaded_file, msg))
                         os.remove(temp_path)
             else:
-                active_track = None
-                while (len(cached_tracks) > 0):
-                    old_track, (old_uploaded_file, old_msg) = cached_tracks.pop_lru()
-                    telegram_manager.save_music(old_msg, True, None)
-                    telegram_manager.delete_message("me", old_msg.id)
+                if (clean_tracks):
+                    active_track = None
+                    while (len(cached_tracks) > 0):
+                        old_track, (old_uploaded_file, old_msg) = cached_tracks.pop_lru()
+                        telegram_manager.save_music(old_msg, True, None)
+                        telegram_manager.delete_message("me", old_msg.id)
     except Exception as e:
         print(f"Error occurred: {e}")
     time.sleep(0.5)
