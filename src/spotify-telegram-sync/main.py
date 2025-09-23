@@ -28,7 +28,7 @@ threading.Thread(target=callback_server.start, daemon=True).start()
 def get_track(track_info):
     name = track_info["item"]["name"]
     artists = ", ".join(a["name"] for a in track_info["item"]["artists"])
-    cover_url = track_info["item"]["album"]["images"][-1]["url"]
+    cover_url = track_info["item"]["album"]["images"][0]["url"]
     album = track_info["item"]["album"]["name"]
 
     return Track(name, artists, cover_url, album)
@@ -90,8 +90,11 @@ while (True):
                         cached_tracks.put(track, (uploaded_file, msg))
                         os.remove(temp_path)
             else:
-                #TODO no track logic 
-                pass
+                active_track = None
+                while (len(cached_tracks) > 0):
+                    old_track, (old_uploaded_file, old_msg) = cached_tracks.pop_lru()
+                    telegram_manager.save_music(old_msg, True, None)
+                    telegram_manager.delete_message("me", old_msg.id)
     except Exception as e:
         print(f"Error occurred: {e}")
     time.sleep(0.5)
