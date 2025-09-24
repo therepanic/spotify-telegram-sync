@@ -1,31 +1,37 @@
+import importlib
 import os
-import shutil
 import threading
 import time
-import requests
 from spotify_callback_server import SpotifyCallbackServer
 from spotify_auth import SpotifyAuth
 from telethon_telegram_manager import TelethonTelegramManager
 from track import Track
-from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TIT2, TPE1, APIC, TALB
 from lru_cache import LRUCache
 
 spotify_auth = SpotifyAuth()
 spotify_manager = None
 callback_server = SpotifyCallbackServer()
+audio_temp_file_path = r"C:\Users\Andrey\Desktop\VSCode-win32-x64-1.66.1\tempFile.mp3"
 
-SILENCE_MP3 = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "silence.mp3")
-sess_path = "/app/session.session"
+sess_path = r"C:\Users\Andrey\Desktop\VSCode-win32-x64-1.66.1\existing.session"
 telegram_manager = TelethonTelegramManager(sess_path, os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
 telegram_manager.start()
 
 active_track = None
 cached_tracks = LRUCache(os.getenv("TRACKS_CACHE_SIZE") or 20)
-
 clean_tracks = os.getenv("CLEAN_TRACKS") or True
 
 threading.Thread(target=callback_server.start, daemon=True).start()
+
+def load_backend_from_env():
+    backend_path = os.getenv("TRACKS_BACKEND") or "zero_track_backend.ZeroTrackBackend"
+    full_backend_path = "backend." + backend_path
+    module_path, class_name = full_backend_path.rsplit(".", 1)
+    module = importlib.import_module(module_path)
+    backend_class = getattr(module, class_name)
+    return backend_class()
+
+track_backend = load_backend_from_env()
 
 def get_track(track_info):
     name = track_info["item"]["name"]
@@ -34,25 +40,6 @@ def get_track(track_info):
     album = track_info["item"]["album"]["name"]
 
     return Track(name, artists, cover_url, album)
-
-def apply_track_info(file_path, track):
-    audio = MP3(file_path, ID3=ID3)
-    if audio.tags is None:
-        audio.add_tags()
-    audio.tags["TIT2"] = TIT2(encoding=3, text=track.name)
-    audio.tags["TPE1"] = TPE1(encoding=3, text=track.artists)
-    audio.tags["TALB"] = TALB(encoding=3, text=track.album)
-
-    cover_bytes = requests.get(track.cover_url).content
-
-    audio.tags["APIC"] = APIC(
-        encoding=3,
-        mime="image/jpeg",
-        type=3,
-        desc="Cover",
-        data=cover_bytes
-    )
-    audio.save(v2_version=3)
 
 while (True):
     try:
@@ -72,11 +59,9 @@ while (True):
                         telegram_manager.save_music(msg, True, None)
                         telegram_manager.save_music(msg, False, None)
                     else:
-                        temp_path = "/app/tempFile.mp3"
-                        shutil.copyfile(SILENCE_MP3, temp_path)
-                        apply_track_info(temp_path, track)
+                        track_backend.recreate(audio_temp_file_path, track)
 
-                        uploaded_file = telegram_manager.upload_file(temp_path)
+                        uploaded_file = telegram_manager.upload_file(audio_temp_file_path)
 
                         msg = telegram_manager.send_file("me", uploaded_file)
                         telegram_manager.save_music(msg.media.document, None, None)
@@ -89,7 +74,8 @@ while (True):
                             telegram_manager.delete_message("me", old_msg.id)
 
                         cached_tracks.put(track, (uploaded_file, msg))
-                        os.remove(temp_path)
+
+                        os.remove(audio_temp_file_path)
             else:
                 if (clean_tracks):
                     active_track = None
