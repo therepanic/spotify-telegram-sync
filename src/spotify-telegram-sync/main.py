@@ -4,7 +4,7 @@ import threading
 import time
 from spotify_callback_server import SpotifyCallbackServer
 from spotify_auth import SpotifyAuth
-from telethon_telegram_manager import TelethonTelegramManager
+from manager.telethon_telegram_manager import TelethonTelegramManager
 from track import Track
 from lru_cache import LRUCache
 

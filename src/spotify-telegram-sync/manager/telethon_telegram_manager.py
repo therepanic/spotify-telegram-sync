@@ -1,5 +1,5 @@
 from telethon.sync import TelegramClient, functions
-from telegram_manager import TelegramManager
+from manager.telegram_manager import TelegramManager
 
 class TelethonTelegramManager(TelegramManager):
     def __init__(self, session, api_id, api_hash):
