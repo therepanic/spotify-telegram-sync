@@ -19,4 +19,3 @@ class TelethonTelegramManager(TelegramManager):
     
     def delete_message(self, peer, msg):
         return self.client.delete_messages(peer, msg)
-
