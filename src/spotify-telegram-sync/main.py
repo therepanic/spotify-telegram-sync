@@ -2,20 +2,27 @@ import importlib
 import os
 import threading
 import time
+import convert_tdata_to_session
 from spotify_callback_server import SpotifyCallbackServer
 from spotify_auth import SpotifyAuth
 from manager.telethon_telegram_manager import TelethonTelegramManager
 from track import Track
 from lru_cache import LRUCache
 
+session_path = "/app/session.session"
+if (not os.path.exists(session_path)):
+    tdata_path = "/app/tdata"
+    if (os.path.exists(tdata_path)):
+        convert_tdata_to_session.convert(session_path, tdata_path)
+    else:
+        raise RuntimeError("Telegram session not found in directory")
+telegram_manager = TelethonTelegramManager(session_path, os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
+telegram_manager.start()
+
 spotify_auth = SpotifyAuth()
 spotify_manager = None
 callback_server = SpotifyCallbackServer()
-audio_temp_file_path = r"C:\Users\Andrey\Desktop\VSCode-win32-x64-1.66.1\tempFile.mp3"
-
-sess_path = r"C:\Users\Andrey\Desktop\VSCode-win32-x64-1.66.1\existing.session"
-telegram_manager = TelethonTelegramManager(sess_path, os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
-telegram_manager.start()
+audio_temp_file_path = "/app/tempFile.mp3"
 
 active_track = None
 cached_tracks = LRUCache(os.getenv("TRACKS_CACHE_SIZE") or 20)

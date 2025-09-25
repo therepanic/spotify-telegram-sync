@@ -1,4 +1,4 @@
 spotipy
 telethon
 mutagen
-
+git+https://github.com/thedemons/opentele.git#egg=opentele
