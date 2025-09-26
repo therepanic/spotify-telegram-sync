@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxrender1 \
         libfontconfig1 \
         python3-pyqt5 \
+        ffmpeg \
     && pip install --no-cache-dir --upgrade pip \
     && rm -rf /var/lib/apt/lists/*
 

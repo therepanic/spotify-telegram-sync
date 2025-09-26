@@ -30,3 +30,4 @@ class ZeroTrackBackend(TrackBackend):
     def recreate(self, temp_path, track):
         shutil.copyfile(SILENCE_MP3, temp_path)
         apply_track_info(temp_path, track)
+        return temp_path

@@ -8,6 +8,7 @@ from spotify_auth import SpotifyAuth
 from manager.telethon_telegram_manager import TelethonTelegramManager
 from track import Track
 from lru_cache import LRUCache
+from backend.zero_track_backend import ZeroTrackBackend
 
 session_path = "/app/session.session"
 if (not os.path.exists(session_path)):
@@ -39,14 +40,16 @@ def load_backend_from_env():
     return backend_class()
 
 track_backend = load_backend_from_env()
+default_track_backend = ZeroTrackBackend()
 
 def get_track(track_info):
     name = track_info["item"]["name"]
     artists = ", ".join(a["name"] for a in track_info["item"]["artists"])
     cover_url = track_info["item"]["album"]["images"][0]["url"]
     album = track_info["item"]["album"]["name"]
+    spotify_url = track_info["item"]["external_urls"]["spotify"]
 
-    return Track(name, artists, cover_url, album)
+    return Track(name, artists, cover_url, album, spotify_url)
 
 while (True):
     try:
@@ -66,7 +69,8 @@ while (True):
                         telegram_manager.save_music(msg, True, None)
                         telegram_manager.save_music(msg, False, None)
                     else:
-                        track_backend.recreate(audio_temp_file_path, track)
+                        if not track_backend.recreate(audio_temp_file_path, track):
+                            default_track_backend.recreate(audio_temp_file_path, track)
 
                         uploaded_file = telegram_manager.upload_file(audio_temp_file_path)
 
