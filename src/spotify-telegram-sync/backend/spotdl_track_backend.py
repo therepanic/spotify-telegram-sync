@@ -19,7 +19,10 @@ class SpotdlTrackBackend(TrackBackend):
             "--client-id", client_id,
             "--client-secret", client_secret
         ]
-        subprocess.run(cmd, check=True)
+        try:
+            subprocess.run(cmd, check=True, timeout=60)
+        except subprocess.TimeoutExpired:
+            return None
         temp_file = None
         for _ in range(10):
             mp3_files = glob.glob(os.path.join(temp_audio_path, "*.mp3"))
