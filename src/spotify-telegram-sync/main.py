@@ -2,6 +2,7 @@ import importlib
 import os
 import threading
 import time
+import asyncio
 import convert_tdata_to_session
 from spotify_callback_server import SpotifyCallbackServer
 from spotify_auth import SpotifyAuth
@@ -17,6 +18,11 @@ if (not os.path.exists(session_path)):
         convert_tdata_to_session.convert(session_path, tdata_path)
     else:
         raise RuntimeError("Telegram session not found in directory")
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 telegram_manager = TelethonTelegramManager(session_path, os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
 telegram_manager.start()
 

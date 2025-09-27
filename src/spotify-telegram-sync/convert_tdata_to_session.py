@@ -4,6 +4,10 @@ from opentele.api import API, UseCurrentSession
 import asyncio
 
 def convert(session_path, tdata_path):
-    tdesk = TDesktop(tdata_path)
-    api = API.TelegramIOS.Generate()
-    return asyncio.run(tdesk.ToTelethon(session_path, UseCurrentSession, api))
+    async def _convert():
+        tdesk = TDesktop(tdata_path)
+        api = API.TelegramIOS.Generate()
+        client = await tdesk.ToTelethon(session_path, UseCurrentSession, api)
+        await client.connect()
+        await client.disconnect()
+    asyncio.run(_convert())
