@@ -1,5 +1,6 @@
 spotipy
-spotdl
+spotdl==4.2.11
+yt-dlp
 telethon
 mutagen
 git+https://github.com/thedemons/opentele.git#egg=opentele
