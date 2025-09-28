@@ -26,8 +26,12 @@ except RuntimeError:
 telegram_manager = TelethonTelegramManager(session_path, os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
 telegram_manager.start()
 
-spotify_auth = SpotifyAuth()
+spotify_auth = SpotifyAuth(os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET"), os.getenv("SPOTIFY_REDIRECT_URI"), "user-read-currently-playing")
 spotify_manager = None
+if (os.getenv("SPOTIFY_REFRESH_TOKEN")):
+    refresh_token = os.getenv("SPOTIFY_REFRESH_TOKEN")
+    token_info, spotify_manager = spotify_auth.from_refresh_token(os.getenv("SPOTIFY_REFRESH_TOKEN"))
+    print(f"Authorized with refresh token: {refresh_token}", flush=True)
 callback_server = SpotifyCallbackServer()
 audio_temp_file_path = "/app/tempFile.mp3"
 
@@ -61,8 +65,8 @@ while (True):
     try:
         code = callback_server.get_code()
         if (callback_server.get_code() != None):
-            token_info, sp = spotify_auth.exchange_code(code)
-            spotify_manager = sp
+            token_info, spotify_manager = spotify_auth.exchange_code(code)
+            print(f"Authorized with refresh token: {token_info.get("refresh_token")}", flush=True)
             callback_server.set_code(None)
         if (spotify_manager != None):
             track_info = spotify_manager.current_user_playing_track()
