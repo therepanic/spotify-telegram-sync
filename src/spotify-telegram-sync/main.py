@@ -42,7 +42,7 @@ clean_tracks = os.getenv("CLEAN_TRACKS") or True
 threading.Thread(target=callback_server.start, daemon=True).start()
 
 def load_backend_from_env():
-    backend_path = os.getenv("TRACKS_BACKEND") or "zero_track_backend.ZeroTrackBackend"
+    backend_path = os.getenv("TRACKS_BACKEND") or "spotdl_track_backend.SpotdlTrackBackend"
     full_backend_path = "backend." + backend_path
     module_path, class_name = full_backend_path.rsplit(".", 1)
     module = importlib.import_module(module_path)
