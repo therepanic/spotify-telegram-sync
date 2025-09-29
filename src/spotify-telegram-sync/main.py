@@ -26,7 +26,7 @@ except RuntimeError:
 telegram_manager = TelethonTelegramManager(session_path, os.getenv("TELEGRAM_API_ID"), os.getenv("TELEGRAM_API_HASH"))
 telegram_manager.start()
 
-spotify_auth = SpotifyAuth(os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET"), os.getenv("SPOTIFY_REDIRECT_URI"), "user-read-currently-playing")
+spotify_auth = SpotifyAuth(os.getenv("SPOTIFY_CLIENT_ID"), os.getenv("SPOTIFY_CLIENT_SECRET"), os.getenv("SPOTIFY_REDIRECT_URI"), os.getenv("SPOTIFY_SCOPE") or "user-read-currently-playing")
 spotify_manager = None
 if (os.getenv("SPOTIFY_REFRESH_TOKEN")):
     refresh_token = os.getenv("SPOTIFY_REFRESH_TOKEN")
