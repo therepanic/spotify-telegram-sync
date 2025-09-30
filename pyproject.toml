@@ -1,6 +1,6 @@
 [project]
 name = "spotify-telegram-sync"
-version = "1.0.0"
+version = "1.0.1"
 description = "Sync currently playing Spotify track to Telegram"
 authors = [{name = "therepanic"}]
 readme = "README.md"
