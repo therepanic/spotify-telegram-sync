@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/icon.png" alt="spotify-telegram-sync" width="210"/>
+  <img src="media/icon.png" alt="spotify-telegram-sync" width="410"/>
 </p>
 
 > Sync your Spotify listening state into Telegram _Music on Profiles_ - upload and pin tracks to your Telegram `Saved Messages` so anyone who sees your profile can see what you're sharing.
