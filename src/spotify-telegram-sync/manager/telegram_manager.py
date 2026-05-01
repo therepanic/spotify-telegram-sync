@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class TelegramManager(ABC):
 
+class TelegramManager(ABC):
     @abstractmethod
     def start(self):
         pass

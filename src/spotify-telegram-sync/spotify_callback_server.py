@@ -6,6 +6,7 @@ client_id = os.getenv("SPOTIFY_CLIENT_ID")
 redirect_uri = os.getenv("SPOTIFY_REDIRECT_URI")
 scope = os.getenv("SPOTIFY_SCOPE")
 
+
 class SpotifyCallbackHandler(BaseHTTPRequestHandler):
     code_storage = None
 
@@ -18,7 +19,7 @@ class SpotifyCallbackHandler(BaseHTTPRequestHandler):
                 "client_id": client_id,
                 "response_type": "code",
                 "redirect_uri": redirect_uri,
-                "scope": scope
+                "scope": scope,
             }
 
             auth_url = f"{base_auth_url}?{urlencode(params)}"
@@ -34,7 +35,10 @@ class SpotifyCallbackHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(f"Authorization code received! You can close this page.".encode("utf-8"))
+            self.wfile.write(
+                "Authorization code received! You can close this page.".encode("utf-8")
+            )
+
 
 class SpotifyCallbackServer:
     def __init__(self, host="0.0.0.0", port=7000):
@@ -46,8 +50,6 @@ class SpotifyCallbackServer:
 
     def get_code(self):
         return SpotifyCallbackHandler.code_storage
-    
+
     def set_code(self, code):
         SpotifyCallbackHandler.code_storage = code
-
-

@@ -9,15 +9,20 @@ temp_audio_path = "/app/audio"
 client_id = os.getenv("SPOTIFY_CLIENT_ID")
 client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 
+
 class SpotdlTrackBackend(TrackBackend):
     def recreate(self, temp_path, track):
         os.makedirs(temp_audio_path, exist_ok=True)
         cmd = [
-            "spotdl", "download",
+            "spotdl",
+            "download",
             track.spotify_url,
-            "--output", temp_audio_path,
-            "--client-id", client_id,
-            "--client-secret", client_secret
+            "--output",
+            temp_audio_path,
+            "--client-id",
+            client_id,
+            "--client-secret",
+            client_secret,
         ]
         try:
             subprocess.run(cmd, check=True, timeout=60)
