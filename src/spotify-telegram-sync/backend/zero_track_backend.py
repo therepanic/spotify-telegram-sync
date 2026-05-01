@@ -3,7 +3,7 @@ import os
 import requests
 from backend.track_backend import TrackBackend
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TIT2, TPE1, APIC, TALB
+from mutagen.id3 import ID3, TIT2, TPE1, APIC, TALB, TCON, TYER, TRCK
 
 SILENCE_MP3 = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "silence.mp3"))
 
@@ -14,6 +14,9 @@ def apply_track_info(file_path, track):
     audio.tags["TIT2"] = TIT2(encoding=3, text=track.name)
     audio.tags["TPE1"] = TPE1(encoding=3, text=track.artists)
     audio.tags["TALB"] = TALB(encoding=3, text=track.album)
+    audio.tags["TCON"] = TCON(encoding=3, text=track.genre)
+    audio.tags["TYER"] = TYER(encoding=3, text=str(track.year))
+    audio.tags["TRCK"] = TRCK(encoding=3, text=str(track.track_number))
 
     cover_bytes = requests.get(track.cover_url).content
 

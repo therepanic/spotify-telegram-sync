@@ -59,7 +59,11 @@ def get_track(track_info):
     album = track_info["item"]["album"]["name"]
     spotify_url = track_info["item"]["external_urls"]["spotify"]
 
-    return Track(name, artists, cover_url, album, spotify_url)
+    track_number = track_info["item"]["track_number"]
+    release_date = track_info["item"]["album"]["release_date"]
+    year = release_date.split("-")[0]
+
+    return Track(name, artists, cover_url, album, spotify_url, None, year, track_number)
 
 while (True):
     try:
