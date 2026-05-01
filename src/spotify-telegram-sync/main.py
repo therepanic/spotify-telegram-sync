@@ -49,7 +49,7 @@ threading.Thread(target=callback_server.start, daemon=True).start()
 
 def load_backend_from_env():
     backend_path = (
-        os.getenv("TRACKS_BACKEND") or "spotdl_track_backend.SpotdlTrackBackend"
+        os.getenv("TRACKS_BACKEND") or "mixed_track_backend.MixedTrackBackend"
     )
     full_backend_path = "backend." + backend_path
     module_path, class_name = full_backend_path.rsplit(".", 1)
