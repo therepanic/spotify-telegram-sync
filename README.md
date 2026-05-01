@@ -49,7 +49,8 @@ docker run -d \
   therepanic/spotify-telegram-sync:latest
 ```
 
-> **Note:** The command above uses placeholders. Do **not** commit or publish your actual `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_CLIENT_ID`, `TELEGRAM_API_HASH`, or refresh tokens. Store sensitive values securely.
+> [!NOTE]
+> The command above uses placeholders. Do **not** commit or publish your actual `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_CLIENT_ID`, `TELEGRAM_API_HASH`, or refresh tokens. Store sensitive values securely.
 
 If you prefer to build locally:
 
@@ -112,6 +113,7 @@ If neither is present, the container will walk you through the auth flow on firs
 3. Start the container. Open `http://<HOST>:7000/auth` in your browser and follow the Spotify authorization flow.
 4. Spotify will redirect to the callback you registered; after authorization the container logs will include the `refresh_token` (if you need one to run headlessly, copy it from the logs and set `SPOTIFY_REFRESH_TOKEN` in your run command on the remote machine).
 
+> [!IMPORTANT]
 > If you already have a valid refresh token you can skip the web flow and set `SPOTIFY_REFRESH_TOKEN` before starting.
 
 ---
