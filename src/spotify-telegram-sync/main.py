@@ -8,8 +8,8 @@ from spotify_callback_server import SpotifyCallbackServer
 from spotify_auth import SpotifyAuth
 from manager.telethon_telegram_manager import TelethonTelegramManager
 from track import Track
-from lru_cache import LRUCache
 from backend.zero_track_backend import ZeroTrackBackend
+from track_sync import TrackSyncService
 
 session_path = "/app/session.session"
 if not os.path.exists(session_path):
@@ -42,11 +42,7 @@ if os.getenv("SPOTIFY_REFRESH_TOKEN"):
     )
     print(f"Authorized with refresh token: {refresh_token}", flush=True)
 callback_server = SpotifyCallbackServer()
-audio_temp_file_path = "/app/tempFile.mp3"
-
-active_track = None
-cached_tracks = LRUCache(os.getenv("TRACKS_CACHE_SIZE") or 20)
-clean_tracks = os.getenv("CLEAN_TRACKS") or True
+clean_tracks = (os.getenv("CLEAN_TRACKS") or "true").strip().lower() == "true"
 
 threading.Thread(target=callback_server.start, daemon=True).start()
 
@@ -64,6 +60,12 @@ def load_backend_from_env():
 
 track_backend = load_backend_from_env()
 default_track_backend = ZeroTrackBackend()
+track_sync = TrackSyncService(
+    telegram_manager,
+    track_backend,
+    default_track_backend,
+    os.getenv("TRACKS_CACHE_SIZE") or 20,
+)
 
 
 def get_track(track_info):
@@ -94,44 +96,11 @@ while True:
             track_info = spotify_manager.current_user_playing_track()
             if track_info and track_info.get("item"):
                 track = get_track(track_info)
-                if active_track != track:
-                    if track in cached_tracks:
-                        uploaded_file, msg = cached_tracks[track]
-                        active_track = track
-                        telegram_manager.save_music(msg, True, None)
-                        telegram_manager.save_music(msg, False, None)
-                    else:
-                        if not track_backend.recreate(audio_temp_file_path, track):
-                            default_track_backend.recreate(audio_temp_file_path, track)
-
-                        uploaded_file = telegram_manager.upload_file(
-                            audio_temp_file_path
-                        )
-
-                        msg = telegram_manager.send_file("me", uploaded_file)
-                        telegram_manager.save_music(msg.media.document, None, None)
-
-                        active_track = track
-
-                        if cached_tracks.is_full():
-                            old_track, (old_uploaded_file, old_msg) = (
-                                cached_tracks.pop_lru()
-                            )
-                            telegram_manager.save_music(old_msg, True, None)
-                            telegram_manager.delete_message("me", old_msg.id)
-
-                        cached_tracks.put(track, (uploaded_file, msg))
-
-                        os.remove(audio_temp_file_path)
+                if track_sync.active_track != track:
+                    track_sync.handle_track(track)
             else:
-                if clean_tracks:
-                    active_track = None
-                    while len(cached_tracks) > 0:
-                        old_track, (old_uploaded_file, old_msg) = (
-                            cached_tracks.pop_lru()
-                        )
-                        telegram_manager.save_music(old_msg, True, None)
-                        telegram_manager.delete_message("me", old_msg.id)
+                track_sync.handle_no_track(clean_tracks)
+        track_sync.process_ready_replacements()
     except Exception as e:
         print(f"Error occurred: {e}")
     time.sleep(0.5)

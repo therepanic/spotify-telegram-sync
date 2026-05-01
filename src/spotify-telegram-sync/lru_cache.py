@@ -21,6 +21,9 @@ class LRUCache:
         self.cache.move_to_end(key)
         return self.cache[key]
 
+    def peek(self, key, default=None):
+        return self.cache.get(key, default)
+
     def put(self, key, value):
         if key in self.cache:
             self.cache.move_to_end(key)
@@ -45,3 +48,9 @@ class LRUCache:
 
     def __iter__(self):
         return iter(self.cache)
+
+    def keys(self):
+        return list(self.cache.keys())
+
+    def items(self):
+        return list(self.cache.items())

@@ -3,16 +3,18 @@ import shutil
 import glob
 import subprocess
 import time
+import tempfile
 from backend.track_backend import TrackBackend
 
-temp_audio_path = "/app/audio"
+temp_audio_root = "/app/audio"
 client_id = os.getenv("SPOTIFY_CLIENT_ID")
 client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 
 class SpotdlTrackBackend(TrackBackend):
     def recreate(self, temp_path, track):
-        os.makedirs(temp_audio_path, exist_ok=True)
+        os.makedirs(temp_audio_root, exist_ok=True)
+        temp_audio_path = tempfile.mkdtemp(prefix="spotdl-", dir=temp_audio_root)
         cmd = [
             "spotdl",
             "download",
@@ -27,6 +29,10 @@ class SpotdlTrackBackend(TrackBackend):
         try:
             subprocess.run(cmd, check=True, timeout=60)
         except subprocess.TimeoutExpired:
+            shutil.rmtree(temp_audio_path, ignore_errors=True)
+            return None
+        except subprocess.CalledProcessError:
+            shutil.rmtree(temp_audio_path, ignore_errors=True)
             return None
         temp_file = None
         for _ in range(10):
@@ -36,6 +42,8 @@ class SpotdlTrackBackend(TrackBackend):
                 break
             time.sleep(0.5)
         if not temp_file:
+            shutil.rmtree(temp_audio_path, ignore_errors=True)
             return None
         shutil.move(temp_file, temp_path)
+        shutil.rmtree(temp_audio_path, ignore_errors=True)
         return temp_path

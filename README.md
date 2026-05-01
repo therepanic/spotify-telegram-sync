@@ -43,6 +43,7 @@ docker run -d \
   -e TELEGRAM_API_ID="<YOUR_TELEGRAM_API_ID>" \
   -e TELEGRAM_API_HASH="<YOUR_TELEGRAM_API_HASH>" \
   -e TRACKS_CACHE_SIZE=20 \
+  -e TRACKS_DOWNLOAD_WORKERS=2 \
   -e TRACKS_BACKEND=spotdl_track_backend.SpotdlTrackBackend \
   -e CLEAN_TRACKS=True \
   therepanic/spotify-telegram-sync:latest
@@ -62,25 +63,27 @@ docker build -t spotify-telegram-sync:latest .
 
 ## Environment variables / configuration
 
-| Variable                | Required |                  Default                  | Description                                                                                                          |
-| ----------------------- | :------: | :---------------------------------------: | -------------------------------------------------------------------------------------------------------------------- |
-| `SPOTIFY_CLIENT_SECRET` |   Yes    |                     -                     | Spotify app client secret (from [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)). |
-| `SPOTIFY_CLIENT_ID`     |   Yes    |                     -                     | Spotify app client id.                                                                                               |
-| `SPOTIFY_REDIRECT_URI`  |   Yes    |                     -                     | Redirect URI registered in Spotify app.                                                                              |
-| `SPOTIFY_SCOPE`         |    No    |       `user-read-currently-playing`       | Spotify scopes. Only `user-read-currently-playing` is required by default.                                           |
-| `SPOTIFY_REFRESH_TOKEN` |    No    |                     -                     | Optional. If you already have a refresh token you can provide it to avoid manual browser login on remote machines.   |
-| `TELEGRAM_API_ID`       |   Yes    |                     -                     | Telegram API ID (create at [https://my.telegram.org/apps](https://my.telegram.org/apps)).                            |
-| `TELEGRAM_API_HASH`     |   Yes    |                     -                     | Telegram API hash (from same place).                                                                                 |
-| `TRACKS_CACHE_SIZE`     |    No    |                   `20`                    | Number of most-recent tracks to keep pinned in Telegram. Older tracks are automatically removed.                     |
-| `TRACKS_BACKEND`        |    No    | `spotdl_track_backend.SpotdlTrackBackend` | Backend used to fetch/download tracks.                                                                               |
-| `CLEAN_TRACKS`          |    No    |                  `True`                   | If `True`, tracks are removed from Telegram when the Spotify session ends.                                           |
+| Variable                  | Required |                  Default                  | Description                                                                                                          |
+| ------------------------- | :------: | :---------------------------------------: | -------------------------------------------------------------------------------------------------------------------- |
+| `SPOTIFY_CLIENT_SECRET`   |   Yes    |                     -                     | Spotify app client secret (from [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)). |
+| `SPOTIFY_CLIENT_ID`       |   Yes    |                     -                     | Spotify app client id.                                                                                               |
+| `SPOTIFY_REDIRECT_URI`    |   Yes    |                     -                     | Redirect URI registered in Spotify app.                                                                              |
+| `SPOTIFY_SCOPE`           |    No    |       `user-read-currently-playing`       | Spotify scopes. Only `user-read-currently-playing` is required by default.                                           |
+| `SPOTIFY_REFRESH_TOKEN`   |    No    |                     -                     | Optional. If you already have a refresh token you can provide it to avoid manual browser login on remote machines.   |
+| `TELEGRAM_API_ID`         |   Yes    |                     -                     | Telegram API ID (create at [https://my.telegram.org/apps](https://my.telegram.org/apps)).                            |
+| `TELEGRAM_API_HASH`       |   Yes    |                     -                     | Telegram API hash (from same place).                                                                                 |
+| `TRACKS_CACHE_SIZE`       |    No    |                   `20`                    | Number of most-recent tracks to keep pinned in Telegram. Older tracks are automatically removed.                     |
+| `TRACKS_DOWNLOAD_WORKERS` |    No    |                    `2`                    | Number of parallel background workers used for delayed audio downloads in mixed mode.                                |
+| `TRACKS_BACKEND`          |    No    | `spotdl_track_backend.SpotdlTrackBackend` | Backend used to fetch/download tracks.                                                                               |
+| `CLEAN_TRACKS`            |    No    |                  `true`                   | If `true`, tracks are removed from Telegram when the Spotify session ends.                                           |
 
 ### Track backends
 
-`TRACKS_BACKEND` controls where track audio and metadata are obtained from. Two backends are supported:
+`TRACKS_BACKEND` controls where track audio and metadata are obtained from. Three backends are supported:
 
 - `spotdl_track_backend.SpotdlTrackBackend` - **default**. Uses `spotdl` logic to locate and download audio for the requested Spotify track.
 - `zero_track_backend.ZeroTrackBackend` - **fallback**. If no backend can find/download the actual audio, this backend uploads a message to Telegram containing the track metadata and cover art but **no audio** (the uploaded track will have 0 seconds duration).
+- `mixed_track_backend.MixedTrackBackend` - **hybrid mode**. Uploads a zero-duration placeholder immediately and then tries to replace that exact slot later with the original audio from `spotdl`.
 
 ### Session volume (Telegram auth)
 
@@ -117,7 +120,8 @@ If neither is present, the container will walk you through the auth flow on firs
 
 1. The service reads your Spotify playback / currently playing via the Web API (`spotipy`).
 2. For tracks that should be shown, the configured backend (default: `spotdl`) prepares a track file or uploadable content.
-3. The track is uploaded to your Telegram `Saved Messages` and pinned. When a track falls out of the cache window or is unpinned/removed, the service deletes it from `Saved Messages`.
+3. In mixed mode, the service first uploads a zero-duration placeholder and upgrades it later if the original audio download succeeds.
+4. The track is uploaded to your Telegram `Saved Messages` and pinned. When a track falls out of the cache window or is unpinned/removed, the service deletes it from `Saved Messages`.
 
 This gives the visual effect of "Music on Profiles" - tracks remain visible while they are inside the configured cache window.
 
