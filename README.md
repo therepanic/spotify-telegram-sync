@@ -4,8 +4,6 @@
 
 > Sync your Spotify listening state into Telegram _Music on Profiles_ - upload and pin tracks to your Telegram `Saved Messages` so anyone who sees your profile can see what you're sharing.
 
----
-
 ## Features
 
 - Sync currently playing / saved tracks from Spotify to Telegram Profiles (Saved Messages).
@@ -14,8 +12,6 @@
 - Supports using an existing Spotify refresh token (optional) so you can run the container on remote machines without a browser.
 - Works with either a Telethon session file or a Telegram `tdata` folder (desktop Telegram data).
 
----
-
 ## Screenshot / Visual
 
 <p align="center">
@@ -23,8 +19,6 @@
 </p>
 
 _(left: Spotify, right: Telegram - shows how the sync flows)_
-
----
 
 ## Quick start - Docker
 
@@ -59,8 +53,6 @@ If you prefer to build locally:
 docker build -t spotify-telegram-sync:latest .
 # then run the same docker run command (replace image name)
 ```
-
----
 
 ## Environment variables / configuration
 
@@ -104,8 +96,6 @@ You **must** provide a Telegram session. Two supported ways:
 
 If neither is present, the container will walk you through the auth flow on first run (it depends on Telethon/opentele capabilities).
 
----
-
 ## Auth / obtaining a Spotify refresh token
 
 1. Create a Spotify App at: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) and copy `CLIENT_ID`, `CLIENT_SECRET` and set a `REDIRECT_URI` (e.g. `http://127.0.0.1:7000/callback`).
@@ -116,8 +106,6 @@ If neither is present, the container will walk you through the auth flow on firs
 > [!IMPORTANT]
 > If you already have a valid refresh token you can skip the web flow and set `SPOTIFY_REFRESH_TOKEN` before starting.
 
----
-
 ## How it works (high level)
 
 1. The service reads your Spotify playback / currently playing via the Web API (`spotipy`).
@@ -127,8 +115,6 @@ If neither is present, the container will walk you through the auth flow on firs
 
 This gives the visual effect of "Music on Profiles" - tracks remain visible while they are inside the configured cache window.
 
----
-
 ## Troubleshooting
 
 - **No Telegram session / auth fails**: ensure `session.session` or `tdata` is correctly mounted and readable by the container. Check container logs for Telethon errors.
@@ -136,13 +122,9 @@ This gives the visual effect of "Music on Profiles" - tracks remain visible whil
 - **No refresh token in logs**: re-run the `/auth` flow and watch the container logs carefully after completing the browser authorization; the refresh token is printed once.
 - **Tracks not uploaded**: check the `TRACKS_BACKEND` configuration and ensure `spotdl` dependencies are present in the image (they are required for the default mixed mode and for `spotdl`-only mode). Also verify network access.
 
----
-
 ## Development & Contributing
 
 Contributions are welcome. Open an issue or a pull request with a clear description of the change. If you add backends or make changes to defaults, please update this README.
-
----
 
 ## License
 
